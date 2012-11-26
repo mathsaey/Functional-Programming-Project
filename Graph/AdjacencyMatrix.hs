@@ -11,42 +11,34 @@ import Data.Array
 import Data.List
 
 type Node = Int
-data AdjacencyMatrix e = Empty | AM (Array (Int, Int) e) deriving Show
+data AdjacencyMatrix e = Empty | AM (Array (Int, Int) (Edge e)) deriving Show
 
 instance (Read e) => Graph (AdjacencyMatrix e) Node e where
 	insertEdge g (n1 ,n2) e = insertEdge' g (n1,n2) e 
-	--edge g (n1, n2)			= edge' g (n1, n2)
+	edge g (n1, n2)			= edge' g (n1, n2)
 	insertNode g n 			= insertNode' g n
 	nodes g 				= nodes' g
 	empty 					= Empty
 
--- makeGraph :: Int -> AdjacencyMatrix
--- makeGraph n = AM $ listArray ((1, n), (1,n)) [1..n]
--- vector ! idx => element
-
--- Work functions
 maxNode :: (AdjacencyMatrix e) -> Node
-maxNode Empty = 0
 maxNode (AM arr) = fst $ snd $ bounds arr 
-
--- Instance functions
-
-insertNode' :: (AdjacencyMatrix e) -> Int -> (AdjacencyMatrix e)
-insertNode' (AM arr) n = AM (listArray ((1,1), (x,x)) (elems arr)) where x = maxNode (AM arr) 
-insertNode' Empty n = AM (listArray ((1,1), (n,n)) [])
-
-insertEdge' :: (AdjacencyMatrix e) -> (Node, Node) -> e -> (AdjacencyMatrix e)
-insertEdge' (AM arr) (n1,n2) e = AM $ arr // [((n1,n2), e)]
-insertEdge' Empty (_,_) _ = Empty
+maxNode Empty = 0
 
 nodes' :: (AdjacencyMatrix e) -> [Node]
 nodes' (AM arr) = [1 .. maxNode (AM arr)]
 nodes' Empty = []
 
+edge' :: (Read e) => (AdjacencyMatrix e) -> (Node, Node) -> Maybe e
+edge' Empty (_,_) = Nothing
+edge' (AM arr) (n1,n2) = getE (arr ! (n1,n2)) where
+		 getE NoEdge = Nothing
+		 getE (Ed e) = Just e
 
---edge' :: (AdjacencyMatrix e) -> (Node, Node) -> Maybe (Edge e)
---edge' Empty (_,_) = Nothing
+insertNode' :: (AdjacencyMatrix e) -> Node -> (AdjacencyMatrix e)
+insertNode' (AM arr) n = AM (listArray ((1,1), (x,x)) (elems arr)) where x = maxNode (AM arr) 
+insertNode' Empty n = AM (listArray ((1,1), (n,n)) [])
 
--- ding x where
-	-- ding 0 = sdlfj
-	-- ding n = 
+insertEdge' :: (Read e) => (AdjacencyMatrix e) -> (Node, Node) -> e -> (AdjacencyMatrix e)
+insertEdge' (AM arr) (n1,n2) e = AM $ arr // [((n1,n2), (Ed e))]
+insertEdge' Empty (_,_) _ = Empty
+
