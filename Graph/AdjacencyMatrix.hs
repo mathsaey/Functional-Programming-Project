@@ -28,17 +28,18 @@ nodes' :: (AdjacencyMatrix e) -> [Node]
 nodes' (AM arr) = [1 .. maxNode (AM arr)]
 nodes' Empty = []
 
-edge' :: (Read e) => (AdjacencyMatrix e) -> (Node, Node) -> Maybe e
+edge' :: (AdjacencyMatrix e) -> (Node, Node) -> Maybe e
 edge' Empty (_,_) = Nothing
 edge' (AM arr) (n1,n2) = getE (arr ! (n1,n2)) where
 		 getE NoEdge = Nothing
 		 getE (Ed e) = Just e
 
 insertNode' :: (AdjacencyMatrix e) -> Node -> (AdjacencyMatrix e)
-insertNode' (AM arr) n = AM (listArray ((1,1), (x,x)) (elems arr)) where x = maxNode (AM arr) 
-insertNode' Empty n = AM (listArray ((1,1), (n,n)) [])
+insertNode' Empty n = AM (listArray ((1,1), (n,n)) $ repeat NoEdge)
+insertNode' (AM arr) n = AM (listArray ((1,1), (m,m)) $ ((elems arr) ++ (repeat NoEdge))) 
+	where m = max n $ maxNode (AM arr) 
 
-insertEdge' :: (Read e) => (AdjacencyMatrix e) -> (Node, Node) -> e -> (AdjacencyMatrix e)
+insertEdge' :: (AdjacencyMatrix e) -> (Node, Node) -> e -> (AdjacencyMatrix e)
 insertEdge' (AM arr) (n1,n2) e = AM $ arr // [((n1,n2), (Ed e))]
 insertEdge' Empty (_,_) _ = Empty
 
