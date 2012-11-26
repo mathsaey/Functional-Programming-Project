@@ -39,10 +39,10 @@ insertEdge' :: (AdjacencyMatrix e) -> (Node, Node) -> e -> (AdjacencyMatrix e)
 insertEdge' (AM arr) (n1,n2) e = AM $ arr // [((n1,n2), e)]
 insertEdge' Empty (_,_) _ = Empty
 
-
 nodes' :: (AdjacencyMatrix e) -> [Node]
-nodes' Empty = []
 nodes' (AM arr) = [1 .. maxNode (AM arr)]
+nodes' Empty = []
+
 
 --edge' :: (AdjacencyMatrix e) -> (Node, Node) -> Maybe (Edge e)
 --edge' Empty (_,_) = Nothing
