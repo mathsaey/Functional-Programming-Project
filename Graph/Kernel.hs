@@ -6,9 +6,6 @@
 
 module Graph.Kernel where
 
-data Node n = No n deriving (Read, Show)
-data Edge e = NoEdge | Ed e deriving (Read, Show)
-
 -- g is the global type of the graph
 -- n is the type of the node labels (must be unique)
 -- e is the type of the edge labels
