@@ -2,7 +2,7 @@
 
 -- Kernel.hs
 -- Mathijs Saey
--- This module contains the basic Graph class and the Node and Edge data
+-- This module contains the basic Graph class
 
 module Graph.Kernel where
 

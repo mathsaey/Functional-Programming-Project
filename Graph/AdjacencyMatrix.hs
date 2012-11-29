@@ -12,7 +12,7 @@ import Data.List
 
 type Node = Int
 data Edge e = NoEdge | Ed e deriving (Read, Show)
-data AdjacencyMatrix e = Empty | AM (Array (Int, Int) (Edge e)) deriving Show
+data AdjacencyMatrix e = Empty | AM (Array (Node, Node) (Edge e)) [Node] deriving Show
 
 instance (Read e) => Graph (AdjacencyMatrix e) Node e where
 	insertEdge g (n1 ,n2) e = insertEdge' g (n1,n2) e 
@@ -22,27 +22,33 @@ instance (Read e) => Graph (AdjacencyMatrix e) Node e where
 	empty 					= Empty
 
 maxNode :: (AdjacencyMatrix e) -> Node
-maxNode (AM arr) = fst $ snd $ bounds arr 
+maxNode (AM arr _) = fst $ snd $ bounds arr 
 maxNode Empty = 0
 
 nodes' :: (AdjacencyMatrix e) -> [Node]
-nodes' (AM arr) = [1 .. maxNode (AM arr)]
+nodes' (AM arr l) = l
 nodes' Empty = []
 
 edge' :: (AdjacencyMatrix e) -> (Node, Node) -> Maybe e
 edge' Empty (_,_) = Nothing
-edge' (AM arr) (n1,n2) = getE (arr ! (n1,n2)) where
+edge' (AM arr l) (n1,n2) 
+	| notElem n1 l = Nothing
+	| notElem n2 l = Nothing
+	| otherwise =  getE $ arr ! (n1,n2) where
 		 getE NoEdge = Nothing
 		 getE (Ed e) = Just e
 
-insertNode' :: (AdjacencyMatrix e) -> Node -> (AdjacencyMatrix e)
-insertNode' Empty n = AM (listArray ((1,1), (n,n)) $ repeat NoEdge)
-insertNode' (AM arr) n = AM (listArray ((1,1), (m,m)) $ ((elems arr) ++ (repeat NoEdge))) 
-	where m = max n $ maxNode (AM arr) 
-
 insertEdge' :: (AdjacencyMatrix e) -> (Node, Node) -> e -> (AdjacencyMatrix e)
-insertEdge' (AM arr) (n1,n2) e = AM $ arr // [((n1,n2), (Ed e))]
 insertEdge' Empty (_,_) _ = Empty
+insertEdge' (AM arr l) (n1,n2) e 
+	| notElem n1 l = AM arr l
+	| notElem n2 l = AM arr l
+	| otherwise =  AM (arr // [((n1,n2), (Ed e))]) l
+
+insertNode' :: (AdjacencyMatrix e) -> Node -> (AdjacencyMatrix e)
+insertNode' Empty n = AM ((listArray ((1,1), (n,n)) $ repeat NoEdge)) [n]
+insertNode' (AM arr l) n = AM ((listArray ((1,1), (m,m)) ((elems arr) ++ (repeat NoEdge)))) (l ++ [n])
+	where m = max n $ maxNode (AM arr l) 
 
 
 
