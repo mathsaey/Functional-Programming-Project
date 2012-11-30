@@ -15,19 +15,19 @@ data BSTGraph n e = EmptyGraph | Graph (BinarySearchTree (n,n) e) [n] deriving S
 -- Tree implementation --
 -------------------------
 
-insertBST :: Ord k => (BinarySearchTree k v) -> k -> v -> (BinarySearchTree k v)
-insertBST EmptyTree k v = BST k v EmptyTree EmptyTree
-insertBST (BST k' v' l r) k v
+insertElement :: Ord k => (BinarySearchTree k v) -> k -> v -> (BinarySearchTree k v)
+insertElement EmptyTree k v = BST k v EmptyTree EmptyTree
+insertElement (BST k' v' l r) k v
 	| k == k' = BST k v l r
-	| k < k' = BST k' v' (insertBST l k v) r
-	| k > k' = BST k' v' l (insertBST r k v)
+	| k < k' = BST k' v' (insertElement l k v) r
+	| k > k' = BST k' v' l (insertElement r k v)
 
-isElement :: Ord k => (BinarySearchTree k v) -> k -> (Maybe v)
-isElement EmptyTree k = Nothing
-isElement (BST k' v l r) k 
+getElement :: Ord k => (BinarySearchTree k v) -> k -> (Maybe v)
+getElement EmptyTree k = Nothing
+getElement (BST k' v l r) k 
 	| k == k' = Just v
-	| k < k' = isElement l k
-	| k > k' = isElement r k
+	| k < k' = getElement l k
+	| k > k' = getElement r k
 
 --------------------------
 -- Graph implementation --
@@ -45,11 +45,11 @@ insertEdge' EmptyGraph (_,_) _ =  EmptyGraph
 insertEdge' (Graph t l) (n1,n2) e 
 	| notElem n1 l = Graph t l
 	| notElem n2 l = Graph t l
-	| otherwise =  Graph (insertBST t (n1, n2) e) l
+	| otherwise =  Graph (insertElement t (n1, n2) e) l
 
 edge' :: (Ord n) => (BSTGraph n e) -> (n,n) -> (Maybe e)
 edge' EmptyGraph _ = Nothing
-edge' (Graph t _) p = isElement t p
+edge' (Graph t _) p = getElement t p
 
 insertNode' :: (BSTGraph n e) -> n -> (BSTGraph n e)
 insertNode' EmptyGraph n = Graph EmptyTree [n]

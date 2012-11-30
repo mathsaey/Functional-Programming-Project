@@ -1,3 +1,3 @@
 {-# LANGUAGE MultiParamTypeClasses, FunctionalDependencies,FlexibleInstances, FlexibleContexts #-}
 
-import Graph.AdjacencyMatrix
+import Graph.BinarySearchTree

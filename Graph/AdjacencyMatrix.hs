@@ -21,10 +21,6 @@ instance (Read e) => Graph (AdjacencyMatrix e) Node e where
 	nodes g 				= nodes' g
 	empty 					= Empty
 
-maxNode :: (AdjacencyMatrix e) -> Node
-maxNode (AM arr _) = fst $ snd $ bounds arr 
-maxNode Empty = 0
-
 nodes' :: (AdjacencyMatrix e) -> [Node]
 nodes' (AM arr l) = l
 nodes' Empty = []
@@ -48,9 +44,7 @@ insertEdge' (AM arr l) (n1,n2) e
 insertNode' :: (AdjacencyMatrix e) -> Node -> (AdjacencyMatrix e)
 insertNode' Empty n = AM ((listArray ((1,1), (n,n)) $ repeat NoEdge)) [n]
 insertNode' (AM arr l) n = AM ((listArray ((1,1), (m,m)) ((elems arr) ++ (repeat NoEdge)))) (l ++ [n])
-	where m = max n $ maxNode (AM arr l) 
-
-
+	where m = max n (fst $ snd $ bounds arr)  
 
 
 --instance (Read e) => Read (AdjacencyMatrix e) where
