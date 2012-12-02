@@ -18,3 +18,17 @@ y = t5
 
 gen = mkStdGen 10
 -- END DEBUG
+
+nodeRadius = 0.5
+
+drawNode :: (n, Float, Float) -> String
+drawNode (_, x, y) = "\\pscircle[linecolor = black](" ++ (show x) ++ "," ++ (show y) ++ "){" ++ show nodeRadius ++ "}"
+
+drawEdge :: (n, Float, Float) -> (n, Float, Float) -> String
+drawEdge (_, fromX, fromY) (_, toX, toY) = "\\psline[linecolor = black]{->}(" ++ 
+	(show fromX) ++ "," ++ (show fromY) ++ ")(" ++ (show toX) ++ "," ++ (show toY) ++ ")"
+
+drawGraph :: [(n, Float, Float)] -> String
+drawGraph [] = ""
+drawGraph ls = foldl (\acc x -> acc ++ (drawNode x) ++ "\n") "" ls
+

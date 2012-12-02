@@ -10,7 +10,7 @@ import System.Random
 
 kineticMinConst = 1
 repulsionConst = 8.998 * (10^9)
-stringConst = -0.2
+stringConst = -0.5
 
 data (Springnode n) = SN {
 	node 	:: n, 
@@ -70,7 +70,7 @@ repulseNode n1 n2
 attractNode :: (Num e, Eq n) => (Springnode n) -> (Springnode n) -> e -> (Springnode n)
 attractNode n1 n2 weight 
 	| (node n1) == (node n2) = n1
-	| otherwise =  calculateForce n1 n2 (-1.0 * (calculateDistance n1 n2) * stringConst)
+	| otherwise =  calculateForce n1 n2 ((calculateDistance n1 n2) * stringConst)
 
 -- Get the effect of all other nodes and edge on a given node
 calculateEffect :: (Graph g n e, Num e, Eq e, Eq n) => g -> [(Springnode n)] -> (Springnode n) -> (Springnode n)
