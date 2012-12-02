@@ -1,5 +1,7 @@
 {-# LANGUAGE MultiParamTypeClasses, FunctionalDependencies,FlexibleInstances, FlexibleContexts #-}
 
+import Text.Printf
+
 -- DEBUG
 import Graph.BinarySearchTree
 import Graph.Layout
@@ -16,17 +18,18 @@ t5 = insertEdge t4 (1,5) 2
 x = t4
 y = t5
 
-gen = mkStdGen 10
+gen = mkStdGen 2435
 -- END DEBUG
 
 nodeRadius = 0.5
 
 drawNode :: (n, Float, Float) -> String
-drawNode (_, x, y) = "\\pscircle[linecolor = black](" ++ (show x) ++ "," ++ (show y) ++ "){" ++ show nodeRadius ++ "}"
+drawNode (_, x, y) = 
+	printf "\\pscircle[linecolor = black](%.2f,%.2f){%.2f}" x y nodeRadius
 
 drawEdge :: (n, Float, Float) -> (n, Float, Float) -> String
-drawEdge (_, fromX, fromY) (_, toX, toY) = "\\psline[linecolor = black]{->}(" ++ 
-	(show fromX) ++ "," ++ (show fromY) ++ ")(" ++ (show toX) ++ "," ++ (show toY) ++ ")"
+drawEdge (_, fromX, fromY) (_, toX, toY) = 
+	printf "\\psline[linecolor = black]{->}(,)(,)" fromX fromY toX toY
 
 drawGraph :: [(n, Float, Float)] -> String
 drawGraph [] = ""
