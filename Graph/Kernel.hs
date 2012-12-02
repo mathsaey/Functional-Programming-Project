@@ -15,3 +15,6 @@ class Graph g n e | g -> n e where
 	nodes 		:: g -> [n] 					-- enumeration of the nodes
 	empty 		:: g 							-- returns an empty graph 
 	edge 		:: g -> (n,n) -> Maybe e 		-- returns an edge between two nodes (if any)
+
+getNeighbours :: (Eq e, Eq n, Graph g n e) => g -> n -> [n]
+getNeighbours g n = [i | i <- nodes g, i /= n, edge g (n, i) /= Nothing]

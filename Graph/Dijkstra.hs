@@ -1,6 +1,6 @@
 -- Dijkstra.hs
 -- Mathijs Saey
--- This module contains the implementation of the graph algorithms
+-- This module contains the implementation of the dijkstra algorithm
 
 module Graph.Dijkstra (dijkstra) where
 
@@ -26,9 +26,6 @@ center (_,x,_) = x
 
 back :: (a,b,c) -> c
 back (_,_,x) = x 
-
-getNeighbours :: (Eq e, Eq n) => (Graph g n e) => g -> n -> [n]
-getNeighbours g n = [i | i <- nodes g, i /= n, edge g (n, i) /= Nothing]
 
 relax :: (Num e, Ord e) => (n,n,(Inf e)) -> n -> (Inf e) -> (Inf e) -> (n,n,(Inf e))
 relax (to,_, INF) newFrom (NI fromW) (NI edgeW) = (to, newFrom, NI $ fromW + edgeW)
@@ -73,6 +70,8 @@ getPath state dest curr lst
 dijkstra :: (Num e, Eq e, Eq n, Ord e, Graph g n e) => g -> n -> n -> Maybe [n]
 dijkstra graph source end
 	| nodes graph == [] = Nothing
+	| notElem end $ nodes graph = Nothing
+	| notElem source $ nodes graph = Nothing	
 	| otherwise = getPath (dijkstraLoop
 		graph
 		(map (\x -> if x == source then (x, x, NI 0) else (x, x, INF)) (nodes graph))
