@@ -7,6 +7,11 @@ import Graph.Kernel
 import Graph.Layout
 import Graph.Dijkstra
 
+import Graph.AdjacencyMatrix
+
+testStr = "- ('z',7) ('b',3) \n - - ('@',7) \n('a',1) - -"
+
+
 nodeRadius = 0.5
 
 drawNode :: (n, Float, Float) -> String

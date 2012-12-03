@@ -46,16 +46,25 @@ insertNode' Empty n = AM ((listArray ((1,1), (n,n)) $ repeat NoEdge)) [n]
 insertNode' (AM arr l) n = AM ((listArray ((1,1), (m,m)) ((elems arr) ++ (repeat NoEdge)))) (l ++ [n])
 	where m = max n (fst $ snd $ bounds arr)  
 
+-------------------------
+-- Read implementation --
+-------------------------
 
---instance (Read e) => Read (AdjacencyMatrix e) where
---	readsPrec _ s = [(readsGraph empty (1,1) s, "")]
+instance (Read e, Show e) => Read (AdjacencyMatrix e) where
+	readsPrec _ s = readGraph s
 
---readsGraph :: (Read e) => (AdjacencyMatrix e) -> (Node, Node) -> String -> (AdjacencyMatrix e)
---readsGraph g (n1, n2) "\0"			= g
---readsGraph g (n1, n2) (' ':xs)		= readsGraph g (n1, n2) xs
---readsGraph g (n1, n2) ('\n':xs)		= readsGraph g (n1 + 1, 1) xs
---readsGraph g (n1, n2) ('-':xs)		= readsGraph (insertNode' g n2) (n1, n2 + 1) xs
---readsGraph g (n1, n2) (x:xs)		= 
---	do ng1 <- insertNode' g n2
---	   ng2 <- insertEdge' g (n1,n2) $ read [x]
---	   readsGraph ng2 (n1, n2 + 1) xs
+readGraph :: (Read e, Show e) => String -> [((AdjacencyMatrix e), String)]
+readGraph "" = [(empty, "")]
+readGraph s = [(graph, "")] where
+	lns = lines s
+	nds = length lns
+	nodesGraph = foldl (\acc x -> insertNode acc x) empty [1..nds]
+	graph = fst $ (foldl (\(g, ctr) x -> (readLine g x ctr, ctr + 1)) (nodesGraph, 1) $ lines s)
+
+readLine :: (Read e, Show e) => (AdjacencyMatrix e) -> String -> Int -> (AdjacencyMatrix e)
+readLine graph s curNode =  fst $ foldl (\(g, ctr) x -> 
+	if x == "-" 
+		then (g, ctr + 1) 
+		else (insertEdge g (curNode, ctr) (read x), ctr + 1))
+	(graph, 1)
+	(words s)
