@@ -50,7 +50,7 @@ addForce (SN node xPos yPos xSpeed ySpeed xNet yNet) xForce yForce =
 		 SN node xPos yPos xSpeed ySpeed (xNet + xForce) (yNet + yForce)
 
 -- Calculates the force on the x and y value of a node given the force and node exercising the force
-calculateForce :: (Show n) => (Springnode n) -> (Springnode n) -> Float -> (Springnode n)
+calculateForce :: (Springnode n) -> (Springnode n) -> Float -> (Springnode n)
 calculateForce n1 n2 force = addForce n1 xdir ydir where  
 	angle = atan $ (yPos n1 - yPos n2)/(xPos n1 - xPos n2)
 	xForce = (cos angle) * force
@@ -70,19 +70,19 @@ getdistance x1 x2 force
 		else abs force 
 
 -- Repulses a node based on the Coulombs law
-repulseNode :: (Show n) => (Eq n) => (Springnode n) -> (Springnode n) -> (Springnode n)
+repulseNode :: (Eq n) => (Springnode n) -> (Springnode n) -> (Springnode n)
 repulseNode n1 n2 
 	| (node n1) == (node n2) = n1
 	| otherwise = calculateForce n1 n2 (repulsionConst/((calculateDistance n1 n2)^2))
 
 -- Attracts a node based on the law of hooke
-attractNode :: (Num e, Eq n, Show n) => (Springnode n) -> (Springnode n) -> e -> (Springnode n)
+attractNode :: (Num e, Eq n) => (Springnode n) -> (Springnode n) -> e -> (Springnode n)
 attractNode n1 n2 weight 
 	| (node n1) == (node n2) = n1
 	| otherwise = calculateForce n1 n2 (-1 * ((calculateDistance n1 n2) - stringLengthConst) * stringConst)
 
 -- Get the effect of all other nodes and edge on a given node
-calculateEffect :: (Graph g n e, Num e, Eq e, Eq n, Show n) => g -> [(Springnode n)] -> (Springnode n) -> (Springnode n)
+calculateEffect :: (Graph g n e, Num e, Eq e, Eq n) => g -> [(Springnode n)] -> (Springnode n) -> (Springnode n)
 calculateEffect graph ls n = attractedN where
 	repulsedN = foldl (\acc x -> repulseNode acc x) n ls
 	attractedN = foldl (\acc x -> let e = edge graph ((node n),(node x)) in
@@ -90,7 +90,7 @@ calculateEffect graph ls n = attractedN where
 									else attractNode acc x (fromJust e))
 						 repulsedN ls
 
-layoutLoop :: (Graph g n e, Num e, Eq e, Eq n, Show n) => g -> [Springnode n] -> [Springnode n]
+layoutLoop :: (Graph g n e, Num e, Eq e, Eq n) => g -> [Springnode n] -> [Springnode n]
 layoutLoop graph nodes
 	| kineticEn < kineticMinConst = nodes
 	| otherwise = layoutLoop graph newNodesl
@@ -102,7 +102,7 @@ layoutLoop graph nodes
 		kineticEn = snd updatedN
 		newNodesl = fst updatedN
 
-layout :: (Num e, Graph g n e, RandomGen r, Eq n, Eq e, Show n, Show r) => g -> r -> [(n, Float, Float)]
+layout :: (Num e, Graph g n e, RandomGen r, Eq n, Eq e) => g -> r -> [(n, Float, Float)]
 layout graph rand =
 		map returnNodePosition $
 		layoutLoop 
