@@ -1,3 +1,7 @@
+-- Layout.hs
+-- Mathijs Saey
+-- This module contains the implementation of the toPsP function. 
+
 import Data.Maybe
 import Data.List
 import Text.Printf
@@ -8,9 +12,7 @@ import Graph.Layout
 import Graph.Dijkstra
 
 import Graph.AdjacencyMatrix
-
-testStr = "- ('z',7) ('b',3) \n - - ('@',7) \n('a',1) - -"
-
+import Graph.BinarySearchTree
 
 nodeRadius = 0.5
 
