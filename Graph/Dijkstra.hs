@@ -58,7 +58,7 @@ dijkstraLoop graph stateList visited unvisited current =
 
 getPath ::  (Eq n, Eq e) => [(n,n, (Inf e))] -> n -> n -> [n] -> Maybe [n]
 getPath state dest curr lst
-	| dest == curr = Just lst
+	| dest == curr = Just $ dest:lst
 	| weight == INF = Nothing
 	| otherwise =  getPath state dest from (node:lst)
 		where 

@@ -47,7 +47,7 @@ toPsP graph gen from to = nodes ++ pathedgeStr ++ noPathedgeStr where
 		layoutL = layout graph gen
 		nodes = foldl (\acc x -> acc ++ (drawNode x) ++ "\n") "" layoutL
 		path = dijkstra graph from to
-		pathFrom = if path /= Nothing then [from] ++ fromJust path else []
+		pathFrom = if path /= Nothing then fromJust path else []
 		pathNodes = map (\x -> fromJust (find (\(n,_,_) -> n == x) layoutL)) pathFrom
 		pathEdges = fst $ foldl (\(ls, e) x -> if e == x then (ls, x) else ((e,x):ls, x)) ([], head pathNodes) pathNodes
 		pathedgeStr = foldl (\acc (a,b) -> acc ++ (drawEdge a b "red" ++ "\n")) "" pathEdges
