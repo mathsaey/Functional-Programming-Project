@@ -113,12 +113,12 @@ instance Read PacmanField where
 			return $ PF (insertPlace g name) p l
 		stmt f 	= do
 			res <- node f -- `orelse` (edge f)
-			return $ res
+			return res
 		stmts f = do
 			res <- stmt f
 			orelse
-				(stmts f)
-				(return f)
+				(stmts res)
+				(return res)
 		graph 	= do
 			keyword "graph"
 			name <- token
