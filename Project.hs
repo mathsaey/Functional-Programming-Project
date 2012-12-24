@@ -9,12 +9,14 @@ import System.Random
 import Graph.Kernel
 import Graph.Layout
 import Graph.Dijkstra
+import Graph.LatexDraw
 
 import Graph.AdjacencyMatrix
 import Graph.BinarySearchTree
 
 import Text.Printf
-import LatexDraw
+
+import Pacman.Base
 
 
 -- DEBUG

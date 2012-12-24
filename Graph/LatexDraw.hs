@@ -2,7 +2,7 @@
 -- Mathijs Saey
 -- This module contains the LatexDraw implementation
 
-module LatexDraw (toPsP) where
+module Graph.LatexDraw (toPsP) where
 
 import Data.List
 import Data.Maybe
