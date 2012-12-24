@@ -2,7 +2,10 @@
 -- Mathijs Saey
 -- This module contains the base pacman abstraction layer
 
-module Pacman.Base (PacmanField, PMGraph, emptyField, getPlaces, getTunnelDelay, insertPlace, insertTunnel, calculatePath) where
+module Pacman.Base (
+	PacmanField, PMGraph, 
+	emptyField, getPlaces, getTunnelDelay, 
+	insertPlace, insertTunnel, calculatePath) where
 
 import Data.Char
 import Data.Maybe
@@ -89,6 +92,8 @@ updateChar g (Loc (x:xs) l) = Mov xs $ fromJust $ getTunnelDelay g (l,x)
 -- Low level parsing --
 -----------------------
 
+-- Based on exercise session 9
+
 sep :: Parser ()
 sep = many (sat (flip elem [' ', '\n'])) >> return ()
 
@@ -105,26 +110,55 @@ keyword s = sep >> string s >> return ()
 -- High level parsing --
 ------------------------
 
+-- This parser is based on the one seen in 
+-- exercise session 9. The main difference is
+-- that is passes the graf along down the calls
+
 instance Read PacmanField where
 	readsPrec _ s = apply graph s where
 		token = word >>= (\s -> return s)
-		node (PF g p l) = do 
+		--boolean = bool >>= (\b -> return b) 
+		natural = number >>= (\i -> return i)
+		--attrs = do
+		--	keyword "["
+		--	lst <- some attr
+		--	keyword "]"
+		--attr = do 
+		--	tag <- token
+		--	keyword "="
+		--	val <- name -- Account for different types
+		chain ls = do -- Make this work
 			name <- token
+			orelse
+				(do 
+					keyword "--"
+					return $ chain (name:ls))
+				(return ls)
+		node (PF g p l) = trace "parsing node" $ do 
+			name <- token
+			keyword ";"
 			return $ PF (insertPlace g name) p l
+		edge (PF g p l) = trace "parsing edge" $ do
+			nodes <- chain []
+			keyword "["
+			keyword "value"
+			keyword "="
+			delay <- natural
+			keyword "]"
+			keyword ";"
+			return $ PF (insertTunnel g ((head nodes),(head $ tail nodes)) delay) p l
 		stmt f 	= do
-			res <- node f -- `orelse` (edge f)
+			res <- (node f) `orelse` (edge f)
 			return res
 		stmts f = do
 			res <- stmt f
 			orelse
 				(stmts res)
 				(return res)
-		graph 	= do
+		graph = do
 			keyword "graph"
 			name <- token
 			keyword "{"
 			res <- stmts $ PF emptyField UnDef []
 			keyword "}"
 			return res 
-
-
