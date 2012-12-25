@@ -128,17 +128,17 @@ instance Read PacmanField where
 		--	keyword "="
 		--	val <- name -- Account for different types
 		chain ls = do -- Make this work
+			keyword "--"
 			name <- token
-			orelse
-				(do 
-					keyword "--"
-					return $ chain (name:ls))
-				(return ls)
-		node (PF g p l) = trace "parsing node" $ do 
+			orelse	
+				(chain (name:ls))
+				(return (name:ls))
+		node (PF g p l) = do 
 			name <- token
 			keyword ";"
 			return $ PF (insertPlace g name) p l
-		edge (PF g p l) = trace "parsing edge" $ do
+		edge (PF g p l) = do
+			name <- token
 			nodes <- chain []
 			keyword "["
 			keyword "value"
@@ -146,9 +146,9 @@ instance Read PacmanField where
 			delay <- natural
 			keyword "]"
 			keyword ";"
-			return $ PF (insertTunnel g ((head nodes),(head $ tail nodes)) delay) p l
+			return $ PF (insertTunnel g (name,(head nodes)) delay) p l
 		stmt f 	= do
-			res <- (node f) `orelse` (edge f)
+			res <- (edge f) `orelse` (node f)
 			return res
 		stmts f = do
 			res <- stmt f
