@@ -4,6 +4,7 @@
 
 module Pacman.DotParser(PacmanField) where
 
+import System.IO
 import Data.Char
 import Data.Maybe
 
@@ -17,6 +18,18 @@ data ParsingStr = UnDef | D String deriving (Show)
 data ParsingPacman = PP ParsingStr ParsingStr deriving (Show)
 data ParsingField = PF' PMGraph ParsingPacman [Ghost]
 
+------------------
+-- File reading --
+------------------
+
+filePath = "pacmanfield.txt"
+
+main = do
+    handle <- openFile filePath ReadMode
+    contents <- hGetContents handle
+    putStr $ show $ (read contents :: PacmanField)
+    hClose handle
+
 -----------------------
 -- Low level parsing --
 -----------------------
@@ -24,7 +37,7 @@ data ParsingField = PF' PMGraph ParsingPacman [Ghost]
 -- Based on exercise session 9
 
 sep :: Parser ()
-sep = many (sat (flip elem [' ', '\n'])) >> return ()
+sep = many (sat (flip elem [' ', '\n', '\t'])) >> return ()
 
 word :: Parser String
 word = sep >> some (sat isLetter)
@@ -77,7 +90,7 @@ insertParseTunnel g (n1,n2) e
 addGhosts ::  ParsingField -> PMLocation -> Int -> ParsingField
 addGhosts (PF' g p ls) loc n = PF' g p (newGhosts ++ ls) where
 	newGhosts =  foldl (\acc x -> ((Loc [] loc):acc)) [] [1..n]
-	
+
 ------------------------
 -- High level parsing --
 ------------------------

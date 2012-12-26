@@ -1,0 +1,11 @@
+graph PACMAN {
+	a;
+	b [target = true];
+	c [source = true ghost = 2];
+	d [ghost = 2];
+
+	a -- b [value = 1];
+	b -- c [value = 2];
+	c -- b [value = 1];
+	c -- d [value = 1];
+}
