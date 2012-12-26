@@ -16,7 +16,7 @@ import Graph.BinarySearchTree
 
 import Text.Printf
 
-import Pacman.Base
+import Pacman.DotParser
 
 
 -- DEBUG

@@ -1,8 +1,11 @@
-module Pacman.DotParser where
+-- DotParser.hs
+-- Mathijs Saey
+-- This module contains the read implementation as well as the file handling
+
+module Pacman.DotParser(PacmanField) where
 
 import Data.Char
 import Data.Maybe
-import Debug.Trace
 
 import Graph.Dijkstra
 
@@ -73,8 +76,8 @@ insertParseTunnel g (n1,n2) e
 -- Adds n ghosts with a set source
 addGhosts ::  ParsingField -> PMLocation -> Int -> ParsingField
 addGhosts (PF' g p ls) loc n = PF' g p (newGhosts ++ ls) where
-	newGhosts =  take n [x | x <- [(Loc [] loc)]]
-
+	newGhosts =  foldl (\acc x -> ((Loc [] loc):acc)) [] [1..n]
+	
 ------------------------
 -- High level parsing --
 ------------------------
