@@ -63,6 +63,21 @@ insertTunnel g n e = insertEdge g n e
 calculatePath ::  PMGraph -> PMLocation -> PMLocation -> Maybe [PMLocation]
 calculatePath g from to = dijkstra g from to 
 
+---------------------------
+-- Ghost search strategy --
+---------------------------
+
+findPaths :: PMGraph -> PMLocation -> PMLocation -> [[PMLocation]]
+findPaths g from to 
+	| from == to = []
+	| toNodes == [] 
+	| otherwise =  result where
+		toNodes = getToNodes g to
+
+
+
+
+
 ---------------
 -- Functions --
 ---------------

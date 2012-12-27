@@ -6,22 +6,18 @@ import Data.List
 import Data.Maybe
 import System.Random
 
-import Graph.Kernel
-import Graph.Layout
-import Graph.Dijkstra
-import Graph.LatexDraw
-
 import Graph.AdjacencyMatrix
 import Graph.BinarySearchTree
 
-import Text.Printf
+import Graph.Dijkstra
+import Graph.TreeSearch
 
-import Pacman.DotParser
+--import Pacman.DotParser
 
 
 -- DEBUG
 
-t0 = foldl (\acc x -> insertNode acc x) (empty :: (BSTGraph Int Int)) [1..5]
+t0 = foldl (\acc x -> insertNode acc x) (empty :: (BSTGraph Int Int)) [1..20]
 t1 = insertEdge t0 (1,2) 1
 t2 = insertEdge t1 (2,3) 1
 t3 = insertEdge t2 (3,4) 1
@@ -30,6 +26,8 @@ t5 = insertEdge t4 (1,5) 2
 
 x = t4
 y = t5
+
+cycles = insertEdge x (3,1) 1
 
 gen = mkStdGen 32242342
 

@@ -33,7 +33,10 @@ plus p1 p2 = P (\s -> (apply p1 s) ++ (apply p2 s))
 
 -- Try the first parser, in case of failure use the second parser
 orelse :: Parser a -> Parser a -> Parser a
-orelse p1 p2 = P (\s -> if null (apply p1 s) then apply p2 s else apply p1 s)
+orelse p1 p2 = P (\s -> let x = (apply p1 s)
+                        in if null x
+                           then apply p2 s
+                           else x)
 
 -- Use the same parser again and again until failure
 many :: Parser a -> Parser [a]

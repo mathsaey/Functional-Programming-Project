@@ -16,7 +16,13 @@ class Graph g n e | g -> n e where
 	empty 		:: g 							-- returns an empty graph 
 	edge 		:: g -> (n,n) -> Maybe e 		-- returns an edge between two nodes (if any)
 
+	-- Gets all the nodes reachable from this node
 	getNeighbours :: (Eq e, Eq n) => g -> n -> [n]
 	getNeighbours g n = [i | i <- nodes g, i /= n, edge g (n, i) /= Nothing]
+
+	-- Gets all the nodes that can lead to this node
+	getToNodes :: (Eq e, Eq n) => g -> n -> [n]
+	getToNodes g n = [i | i <- nodes g, i /= n, edge g (i, n) /= Nothing]
+
 
 
