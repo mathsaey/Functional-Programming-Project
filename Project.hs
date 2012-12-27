@@ -4,16 +4,20 @@
 
 import Data.List
 import Data.Maybe
+
+import Text.Printf
 import System.Random
 
-import Pacman.DotParser
 import Pacman.Base
+import Pacman.DotParser
 
+import Graph.Layout
+import Graph.LatexDraw
 import Graph.BinarySearchTree
 
 -- DEBUG
 
-t0 = foldl (\acc x -> insertNode acc x) (empty :: (BSTGraph Int Int)) [1..20]
+t0 = foldl (\acc x -> insertNode acc x) (empty :: (BSTGraph Int Int)) [1..10]
 t1 = insertEdge t0 (1,2) 1
 t2 = insertEdge t1 (2,3) 1
 t3 = insertEdge t2 (3,4) 1

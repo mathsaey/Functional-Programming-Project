@@ -2,16 +2,19 @@
 -- Mathijs Saey
 -- This module contains the base pacman abstraction layer
 
-module Pacman.Base (
-	PMTunnel, PMLocation,
-	PacmanField(..), PMGraph, 
-	Character(..), Pacman, Ghost,
-	emptyField, getPlaces, getTunnelDelay, 
-	insertPlace, insertTunnel, calculatePath) where
+module Pacman.Base where 
+	--PMTunnel, PMLocation,
+	--Character(..), Pacman, Ghost,
+	--PacmanField(..), PMGraph,PacmanPath(..),
+	--emptyField, getPlaces, getTunnelDelay, 
+	--insertPlace, insertTunnel, calculatePath, getAllPaths) where
 
 import Data.Maybe
+import Data.Array
+
 import Graph.Kernel
 import Graph.Dijkstra
+import Graph.TreeSearch
 import Graph.BinarySearchTree
 
 ----------------
@@ -20,21 +23,25 @@ import Graph.BinarySearchTree
 
 type PMTunnel = Int
 type PMLocation = String
-type Ghost = Character
-type Pacman = Character
 type PMGraph = BSTGraph PMLocation PMTunnel
+
+type Pacman = Character
+type Ghost = Character
 
 -- A pacmanpath contains a path that pacman might follow
 -- and a boolean that indicates if a ghost is currently 
 -- trying to block it
-data PacmanPath = Bool [PMLocation] deriving (Show)
+data PacmanPath = PmP {
+	isBlocked 	:: Bool, 
+	fullPath 	:: [PMLocation]
+} deriving (Show)
 
 -- A pacmanField contains the graph, pacman and the ghosts
 data PacmanField = PF {
 	graph 	:: PMGraph,
 	pacman 	:: Pacman,
 	ghosts	:: [Ghost],
-	paths	:: [PacmanPath]
+	paths	:: (Array Int PacmanPath)
 } deriving (Show)
 
 -- A charachter is either at a certain location,
@@ -70,18 +77,63 @@ insertTunnel g n e = insertEdge g n e
 calculatePath ::  PMGraph -> PMLocation -> PMLocation -> Maybe [PMLocation]
 calculatePath g from to = dijkstra g from to 
 
+getAllPaths :: PMGraph -> PMLocation -> PMLocation -> [[PMLocation]] 
+getAllPaths g n1 n2 = findPaths g n1 n2
+
 ---------------------------
 -- Ghost search strategy --
 ---------------------------
 
+-- Sets the blocked value for every path in a given list
+setPath :: PacmanField -> [Int] -> Bool -> PacmanField
+setPath (PF gr pa gh ps) idx val = PF gr pa gh $ 
+	ps // [(i,j) | i <- idx, j <- [PmP val $ fullPath (ps ! i)]] 
 
+claimPath :: PacmanField -> [Int] -> PacmanField
+claimPath g idx = setPath g idx True
 
+releasePath :: PacmanField -> [Int] -> PacmanField
+releasePath g idx = setPath g idx False
 
+checkPath :: PacmanField -> Int -> Bool
+checkPath (PF gr pa gh ps) idx = isBlocked $ ps ! idx
 
+-- Check how many paths we can block by occupying a node
+checkBlocks ::  PacmanField -> PMLocation -> Int
+checkBlocks (PF gr pa gh ps) loc = foldl (\acc x -> if loc `elem` (fullPath x) then acc + 1 else acc) 0 $ elems ps 
 
----------------
--- Functions --
----------------
+-- Get the index of every path that contains a given node
+getIndices ::  PacmanField -> PMLocation -> [Int]
+getIndices (PF gr pa gh ps) loc = foldl (\ls (idx, pmp) -> if loc `elem` (fullPath pmp) then idx:ls else ls) [] $ assocs ps 
+
+-- Block all paths that contain a given node
+blockNode :: PacmanField -> PMLocation -> PacmanField
+blockNode f l = claimPath f $ getIndices f l 
+
+unBlockNode :: PacmanField -> PMLocation -> PacmanField
+unBlockNode f loc = checkPaths $ releasePath f $ getIndices f loc
+
+-- Checks all paths after a path has been unblocked
+-- this function ensures that a path remains blocked when 2
+-- ghosts blocked the same path
+checkPaths :: PacmanField -> PacmanField
+checkPaths (PF gr pa gh ps) = foldl (\acc (Loc _ l) -> blockNode acc l) (PF gr pa gh ps) gh 
+
+---------------------
+-- Pacman strategy --
+---------------------
+
+findPacmanPath :: PacmanField -> PacmanField
+findPacmanPath (PF gr pa gh ps) = PF gr pacman gh ps
+	where 
+		idx = foldl (\acc (idx, pmp) -> if not $ isBlocked pmp then idx else acc) (-1) $ assocs ps
+		pacman = if idx /= (-1) 
+					then (Loc (fullPath (ps ! idx)) (location pa))
+					else pa
+
+-----------------------
+-- General Functions --
+-----------------------
 
 -- Makes a character move along it's path
 updateChar :: PMGraph -> Character -> Character

@@ -9,7 +9,7 @@ import Graph.Kernel
 import System.Random
 
 stringLengthConst = 3
-kineticMinConst = 0.5
+kineticMinConst = 0.7
 timeStepConst = 0.1
 repulsionConst = 12
 dampingConst = 0.4

@@ -4,21 +4,24 @@
 
 module Pacman.DotParser(PacmanField, openGameFile, getGameFileContents) where
 
-import System.IO
-import System.IO.Unsafe
-
 import Data.Char
+import Data.Array
 import Data.Maybe
 
-import Graph.Dijkstra
+import System.IO
+import System.IO.Unsafe
 
 import Pacman.Base
 import Pacman.GeneralParser
 
 -- A temporary version of the datatypes used for parsing
 data ParsingStr = UnDef | D String deriving (Show)
-data ParsingPacman = PP ParsingStr ParsingStr deriving (Show)
 data ParsingField = PF' PMGraph ParsingPacman [Ghost]
+
+data ParsingPacman = PP {
+	source :: ParsingStr,
+	target :: ParsingStr 
+} deriving (Show)
 
 ------------------
 -- File reading --
@@ -57,7 +60,13 @@ keyword s = sep >> string s >> return ()
 
 -- Converts a parsing field back to a regular pacmanfield
 convertField :: ParsingField -> PacmanField
-convertField (PF' g pm ls) = PF g (convertPacman g pm) ls [] 
+convertField (PF' g pm ls) = PF g (convertPacman g pm) ls $ getPaths g pm
+
+-- Calculate the paths Pacman can take
+getPaths ::  PMGraph -> ParsingPacman -> (Array Int PacmanPath)
+getPaths g (PP (D source) (D target)) =  listArray (1, length paths) $
+											map (\x -> PmP False x) paths where
+												paths = getAllPaths g source target
 
 -- Attempts to convert a ParsingPacman to a regular pacman
 convertPacman :: PMGraph -> ParsingPacman -> Pacman
@@ -65,7 +74,7 @@ convertPacman _ (PP UnDef UnDef) = error "Parse error: pacman does not have a so
 convertPacman _ (PP UnDef _) = error "Parse error: pacman does not have a source" 
 convertPacman _ (PP _ UnDef) = error "Parse error: pacman does not have a goal"
 convertPacman g (PP (D s) (D d))  = Loc (tail path) s where
-	maybePath = (dijkstra g s d)
+	maybePath = (calculatePath g s d)
 	path = if maybePath /= Nothing 
 			then fromJust maybePath
 			else error "Parse error: There is no valid path between the start and end location of pacman"
