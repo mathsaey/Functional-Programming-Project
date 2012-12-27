@@ -5,7 +5,6 @@
 -- This module contains the basic Graph class
 
 module Graph.Kernel where
-
 import Data.Maybe
 
 -- g is the global type of the graph

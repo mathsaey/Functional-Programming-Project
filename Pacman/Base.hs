@@ -10,6 +10,7 @@ module Pacman.Base (
 	insertPlace, insertTunnel, calculatePath) where
 
 import Data.Maybe
+import Graph.Kernel
 import Graph.Dijkstra
 import Graph.BinarySearchTree
 
@@ -23,11 +24,17 @@ type Ghost = Character
 type Pacman = Character
 type PMGraph = BSTGraph PMLocation PMTunnel
 
+-- A pacmanpath contains a path that pacman might follow
+-- and a boolean that indicates if a ghost is currently 
+-- trying to block it
+data PacmanPath = Bool [PMLocation] deriving (Show)
+
 -- A pacmanField contains the graph, pacman and the ghosts
 data PacmanField = PF {
 	graph 	:: PMGraph,
 	pacman 	:: Pacman,
-	ghosts	:: [Ghost]
+	ghosts	:: [Ghost],
+	paths	:: [PacmanPath]
 } deriving (Show)
 
 -- A charachter is either at a certain location,
@@ -67,12 +74,6 @@ calculatePath g from to = dijkstra g from to
 -- Ghost search strategy --
 ---------------------------
 
-findPaths :: PMGraph -> PMLocation -> PMLocation -> [[PMLocation]]
-findPaths g from to 
-	| from == to = []
-	| toNodes == [] 
-	| otherwise =  result where
-		toNodes = getToNodes g to
 
 
 

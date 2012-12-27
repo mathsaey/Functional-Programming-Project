@@ -1,11 +1,16 @@
-graph PACMAN {
-	a;
-	b [target = true];
-	c [source = true ghost = 2];
-	d [ghost = 2];
-
-	a -- b [value = 1];
-	b -- c [value = 2];
-	c -- b [value = 1];
-	c -- d [value = 1];
+graph pacman {
+	a [source=true];
+	b1;
+	b2;
+	c [ghost=1];
+	d1;
+	d2;
+	e1;
+	e2;
+	f [target=true];
+	g [ghost=1];
+	a -- b1 [value=4];
+	b1 -- c [value=1];
+	c -- d1 -- e1 -- f [value=3];
+	a -- b2 -- c -- d2 -- e2 -- g [value=3]; e2 -- f [value=10];
 }

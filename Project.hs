@@ -6,15 +6,10 @@ import Data.List
 import Data.Maybe
 import System.Random
 
-import Graph.AdjacencyMatrix
+import Pacman.DotParser
+import Pacman.Base
+
 import Graph.BinarySearchTree
-
-import Graph.Dijkstra
-import Graph.TreeSearch
-import Graph.Kernel
-
---import Pacman.DotParser
-
 
 -- DEBUG
 
@@ -31,6 +26,9 @@ y = t5
 cycles = insertEdge x (3,1) 1
 
 gen = mkStdGen 32242342
+
+filePath = "pacmanfield.txt"
+loadField = (read $ getGameFileContents filePath) :: PacmanField
 
 -- DEBUG
 

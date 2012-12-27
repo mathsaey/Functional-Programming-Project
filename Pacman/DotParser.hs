@@ -2,9 +2,11 @@
 -- Mathijs Saey
 -- This module contains the read implementation as well as the file handling
 
-module Pacman.DotParser(PacmanField) where
+module Pacman.DotParser(PacmanField, openGameFile, getGameFileContents) where
 
 import System.IO
+import System.IO.Unsafe
+
 import Data.Char
 import Data.Maybe
 
@@ -22,13 +24,14 @@ data ParsingField = PF' PMGraph ParsingPacman [Ghost]
 -- File reading --
 ------------------
 
-filePath = "pacmanfield.txt"
+openGameFile :: String -> IO String
+openGameFile filePath = do
+    contents <- readFile filePath
+    return contents
 
-main = do
-    handle <- openFile filePath ReadMode
-    contents <- hGetContents handle
-    putStr $ show $ (read contents :: PacmanField)
-    hClose handle
+-- HERE BE DRAGONS --
+getGameFileContents :: String -> String
+getGameFileContents filePath = unsafePerformIO $ openGameFile filePath
 
 -----------------------
 -- Low level parsing --
@@ -40,7 +43,7 @@ sep :: Parser ()
 sep = many (sat (flip elem [' ', '\n', '\t'])) >> return ()
 
 word :: Parser String
-word = sep >> some (sat isLetter)
+word = sep >> some (sat isLetter `orelse` sat isDigit)
 
 number :: Parser Int
 number = sep >> some (sat isDigit) >>= (\s -> return $ read s)
@@ -54,7 +57,7 @@ keyword s = sep >> string s >> return ()
 
 -- Converts a parsing field back to a regular pacmanfield
 convertField :: ParsingField -> PacmanField
-convertField (PF' g pm ls) = PF g (convertPacman g pm) ls 
+convertField (PF' g pm ls) = PF g (convertPacman g pm) ls [] 
 
 -- Attempts to convert a ParsingPacman to a regular pacman
 convertPacman :: PMGraph -> ParsingPacman -> Pacman
@@ -132,7 +135,7 @@ instance Read PacmanField where
 			res <- inattrs f n
 			keyword "]"
 			return res
-		chain ls = do
+		chain ls = do 
 			keyword "--"
 			name <- token
 			(chain (name:ls)) `orelse` (return (name:ls))
@@ -152,7 +155,10 @@ instance Read PacmanField where
 			delay <- natural
 			keyword "]"
 			keyword ";"
-			return $ PF' (insertParseTunnel g (name,(head nodes)) delay) p l
+			return $ PF' (fst (foldl 
+								(\(g, n1) n2 -> ((insertParseTunnel g (n1, n2) delay), n2)) 
+								(g, name) (reverse nodes)))
+						 p l 
 		stmt f = do
 			res <- (edge f) `orelse` (node f)
 			return res
