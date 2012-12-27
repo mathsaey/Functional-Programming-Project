@@ -6,6 +6,8 @@
 
 module Graph.Kernel where
 
+import Data.Maybe
+
 -- g is the global type of the graph
 -- n is the type of the node labels (must be unique)
 -- e is the type of the edge labels
@@ -24,5 +26,9 @@ class Graph g n e | g -> n e where
 	getToNodes :: (Eq e, Eq n) => g -> n -> [n]
 	getToNodes g n = [i | i <- nodes g, i /= n, edge g (i, n) /= Nothing]
 
+	-- Gets the weight of a path, assumes the path exists
+	getPathWeight :: (Num e) => g -> [n] -> e
+	getPathWeight g ls = fst $ foldl (\(w, p) x -> (((fromJust (edge g (p,x))) + w), x))
+									 (0, head ls) (tail ls)
 
 

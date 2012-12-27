@@ -11,6 +11,7 @@ import Graph.BinarySearchTree
 
 import Graph.Dijkstra
 import Graph.TreeSearch
+import Graph.Kernel
 
 --import Pacman.DotParser
 

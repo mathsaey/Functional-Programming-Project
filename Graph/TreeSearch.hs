@@ -2,6 +2,9 @@
 -- Mathijs Saey
 -- This module contains the implementation of tree based graph algorithms
 
+-- Instead of implementing elaborate algorithms, we add a way to create a 
+-- tree from any graph and allow functions to traverse this tree as they please
+
 module Graph.TreeSearch (findPaths) where
 
 import Graph.Kernel
