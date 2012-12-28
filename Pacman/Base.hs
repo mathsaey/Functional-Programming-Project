@@ -12,6 +12,7 @@ module Pacman.Base where
 import Data.Maybe
 import Data.Array
 
+import Infinity
 import Graph.Kernel
 import Graph.Dijkstra
 import Graph.TreeSearch
@@ -111,13 +112,51 @@ blockNode :: PacmanField -> PMLocation -> PacmanField
 blockNode f l = claimPath f $ getIndices f l 
 
 unBlockNode :: PacmanField -> PMLocation -> PacmanField
-unBlockNode f loc = checkPaths $ releasePath f $ getIndices f loc
+unBlockNode f loc = refreshPaths $ releasePath f $ getIndices f loc
 
--- Checks all paths after a path has been unblocked
--- this function ensures that a path remains blocked when 2
--- ghosts blocked the same path
-checkPaths :: PacmanField -> PacmanField
-checkPaths (PF gr pa gh ps) = foldl (\acc (Loc _ l) -> blockNode acc l) (PF gr pa gh ps) gh 
+-- Refreshes the locks on the path. Opens up every path, then closes 
+-- every path that is blocked by a ghost
+refreshPaths :: PacmanField -> PacmanField
+refreshPaths (PF gr pa gh ps) = foldl 
+	(\acc (Loc _ l) -> blockNode acc l) 
+	(releasePath (PF gr pa gh ps) $ indices ps) 
+	gh 
+
+-- Finds the nearest node in a path
+findNearestNode'' ::  PMGraph -> PacmanPath -> PMLocation -> (Inf PMTunnel, PMLocation)
+findNearestNode'' _ (PmP True p) l = (INF,l)
+findNearestNode'' g (PmP False p) l = foldl (\(weight, ls) x -> 
+	let weight' = if path /= Nothing 
+					then NI $ getPathWeight g (fromJust path)
+					else INF
+					 where
+					 	path = calculatePath g l x 
+	in if weight' < weight 
+		then (weight', x) 
+		else (weight, ls)) (INF, l) p
+
+-- Selects the nearest node from all the unclaimed paths
+findNearestNode' :: PMGraph -> [PacmanPath] -> PMLocation -> [PMLocation]
+findNearestNode' g ls loc = snd $ foldl 
+	(\(weight, dest) x -> case () of 
+	  _	| weight' == weight 	-> (weight, node:dest)
+		| weight' < weight 		-> (weight', [node])
+		| otherwise 			-> (weight, dest) 
+		where
+	     	res = findNearestNode'' g x loc
+	     	weight' = fst $ res
+	     	node = snd $ res) 
+	(INF, [loc])
+	ls
+
+-- Selects the node that blocks most possible paths from the result of findNearestNode'
+findNearestNode :: PacmanField -> [PacmanPath] -> PMLocation -> [PMLocation]
+findNearestNode f ls loc = fromJust $ dijkstra (graph f) loc dest where
+	nodes = findNearestNode' (graph f) ls loc
+	res = foldl (\(paths, node) x -> let paths' = checkBlocks f x in
+					if paths < paths' then (paths', x) else (paths, node))
+				(0, loc) nodes
+	dest = snd $ res
 
 ---------------------
 -- Pacman strategy --

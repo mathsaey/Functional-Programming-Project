@@ -7,16 +7,7 @@ module Graph.Dijkstra (dijkstra) where
 import Graph.Kernel
 import Data.Maybe
 import Data.List
-
--- Provides an abstraction to deal with
--- infinity, regardless of the data type
-data Inf e = INF | NI e deriving (Read, Show, Eq)
-
-instance (Ord e) => Ord (Inf e) where
-	compare (NI x) (NI y) = compare x y 
-	compare INF INF = EQ
-	compare INF _ = GT
-	compare _ INF = LT
+import Infinity
 
 front :: (a,b,c) -> a
 front (x,_,_) = x 

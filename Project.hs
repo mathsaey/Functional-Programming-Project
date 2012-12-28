@@ -12,6 +12,7 @@ import Pacman.Base
 import Pacman.DotParser
 
 import Graph.Layout
+import Graph.Dijkstra
 import Graph.LatexDraw
 import Graph.BinarySearchTree
 
