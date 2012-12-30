@@ -20,9 +20,10 @@ back (_,_,x) = x
 
 relax :: (Num e, Ord e) => (n,n,(Inf e)) -> n -> (Inf e) -> (Inf e) -> (n,n,(Inf e))
 relax (to,_, INF) newFrom (NI fromW) (NI edgeW) = (to, newFrom, NI $ fromW + edgeW)
-relax (to, oldFrom, (NI oldWeight)) newFrom (NI fromW) (NI edgeW) 
+relax (to, oldFrom, oldWeight) newFrom INF (NI edgeW) = (to, oldFrom , oldWeight)
+relax (to, oldFrom, (NI oldWeight)) newFrom (NI fromW) (NI edgeW)
 	| newWeight < oldWeight = (to, newFrom, NI newWeight)
-	| otherwise =  (to, oldFrom, NI oldWeight)
+	| otherwise = (to, oldFrom, NI oldWeight)
 		where newWeight = edgeW + fromW
 
 relaxNeighbours ::  (Graph g n e, Num e, Ord e, Eq n) => g -> n -> [(n,n, (Inf e))] -> [(n, n, (Inf e))]
