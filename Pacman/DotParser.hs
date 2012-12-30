@@ -88,14 +88,12 @@ setPacmanDest :: ParsingPacman -> PMLocation -> ParsingPacman
 setPacmanDest (PP s UnDef) d = PP s (D d)
 setPacmanDest (PP _ _) _ = error "Parse error: There is already a target location for pacman!"
 
--- This is just a call to the normal insertTunnel function
--- the only difference is that it will raise an error when the
--- nodes do not exist rather then just ignoring the call 
+-- Add a bidirectional tunnel between 2 nodes, if they exist
 insertParseTunnel ::  PMGraph -> (PMLocation,PMLocation) -> PMTunnel -> PMGraph
 insertParseTunnel g (n1,n2) e 
 	| notElem n1 $ getPlaces g = error er
 	| notElem n2 $ getPlaces g = error er
-	| otherwise =  insertTunnel g (n1,n2) e 
+	| otherwise =  insertTunnel (insertTunnel g (n1,n2) e) (n2,n1) e
 	where er = "Parse error: Undefined node reference"
 
 -- Adds n ghosts with a set source
