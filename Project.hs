@@ -11,6 +11,7 @@ import System.Random
 import Pacman.Base
 import Pacman.DotParser
 
+import Graph.Kernel
 import Graph.Layout
 import Graph.Dijkstra
 import Graph.LatexDraw
@@ -34,6 +35,8 @@ gen = mkStdGen 32242342
 
 filePath = "pacmanfield.txt"
 loadField = (read $ getGameFileContents filePath) :: PacmanField
+
+tmp = loadField
 
 -- DEBUG
 

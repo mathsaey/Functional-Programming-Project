@@ -27,6 +27,7 @@ class Graph g n e | g -> n e where
 
 	-- Gets the weight of a path, assumes the path exists
 	getPathWeight :: (Num e) => g -> [n] -> e
+	getPathWeight g [] = 0
 	getPathWeight g ls = fst $ foldl (\(w, p) x -> (((fromJust (edge g (p,x))) + w), x))
 									 (0, head ls) (tail ls)
 
