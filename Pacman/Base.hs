@@ -209,12 +209,9 @@ getField tvar = readTVar tvar
 setGhosts :: TVar PacmanField -> TVar Int -> Ghost -> STM ()
 setGhosts tField tChecker ghost = do 
 	oldField <- getField tField
-	if null (ghosts oldField)
-		then retry
-		else do
-			newField <- return $ PF (graph oldField) (pacman oldField) (ghost:(ghosts oldField)) (paths oldField)
-			reduceUpdateChecker tChecker
-			writeTVar tField newField
+	newField <- return $ PF (graph oldField) (pacman oldField) (ghost:(ghosts oldField)) (paths oldField)
+	reduceUpdateChecker tChecker
+	writeTVar tField newField
 
 -- The update check keeps track of the amount of ghosts
 -- that are still calculating their route
@@ -242,21 +239,19 @@ checkUpdateChecker tvar = trace "hum" $ do
 		else retry
 
 calculateGhost :: TVar PacmanField -> TVar Int -> PacmanField -> Ghost -> IO()
-calculateGhost tField tChecker field ghost = trace "getting ghosts" $ atomically $ setGhosts tField tChecker $ orientGhost field ghost
+calculateGhost tField tChecker field ghost = trace "getting ghost" $ atomically $ setGhosts tField tChecker $ orientGhost field ghost
 
-startGame :: PacmanField -> IO(PacmanField)
-startGame (PF gr pa gh ps) = do
+calculateGhosts :: PacmanField -> IO(PacmanField)
+calculateGhosts (PF gr pa gh ps) = do
 	field <- atomically $ insertField (PF gr pa [] ps)
 	check <- atomically $ createUpdateChecker (length gh)
-	return $! map (\x -> trace "forking" $ forkIO $ calculateGhost field check (PF gr pa gh ps) x) gh
-	putStrLn "Filling thread terminated."
-	return $! checkUpdateChecker check
-	putStrLn "looool"
-	traceT check $ readTVarIO field
+	mapM_ (\x -> forkIO $ calculateGhost field check (PF gr pa gh ps) x) gh
+	return $ checkUpdateChecker check
+	readTVarIO field
 
 -- DEBUG
 traceT x f = trace (show $ unsafePerformIO $ readTVarIO x) f
-
+--  atomically $ getTVar myVar >>= \x -> check (x >= waitAmount)
 ---------------------
 -- Pacman strategy --
 ---------------------
