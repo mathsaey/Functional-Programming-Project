@@ -107,7 +107,7 @@ addGhosts (PF' g p ls) loc n = PF' g p (newGhosts ++ ls) where
 
 -- This parser is based on the one seen in 
 -- exercise session 9. The main difference is
--- that is passes the graf along down the calls
+-- that is passes the graph along with the calls
 
 instance Read PacmanField where
 	readsPrec _ s = map (\(x,s) -> (convertField x, s)) $ apply graph s where

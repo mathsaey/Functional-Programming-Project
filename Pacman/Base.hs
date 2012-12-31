@@ -3,13 +3,6 @@
 -- This module contains the base pacman abstraction layer
 
 module Pacman.Base where 
-	--PMTunnel, PMLocation,
-	--Character(..), Pacman, Ghost,
-	--PacmanField(..), PMGraph,PacmanPath(..),
-	--emptyField, getPlaces, getTunnelDelay, 
-	--insertPlace, insertTunnel, calculatePath, getAllPaths) where
-
-import Debug.Trace
 
 import Data.Maybe
 import Data.Array
@@ -122,6 +115,10 @@ releasePath g idx = setPath g idx False
 checkPath :: PacmanField -> Int -> Bool
 checkPath (PF gr pa gh ps) idx = isBlocked $ ps ! idx
 
+-- Check if one path in a list of paths is unblocked
+checkPaths :: PacmanField -> [Int] -> Bool
+checkPaths f ls = foldl (\acc x -> acc || (not $ checkPath f x)) False ls
+
 -- Get the index of every path that contains a given node
 getIndices ::  PacmanField -> PMLocation -> [Int]
 getIndices (PF gr pa gh ps) loc = foldl (\ls (idx, pmp) -> if loc `elem` (fullPath pmp) then idx:ls else ls) [] $ assocs ps 
@@ -189,12 +186,38 @@ findNearestPathNode f loc = fromJust $ dijkstra (graph f) loc dest where
 				(0, loc) nodes
 	dest = snd $ res
 
+-- Find a path for a ghost, we use -1 to indicate that a ghost
+-- is blocking a path and doesn't need to move
 orientGhost :: PacmanField -> Ghost -> Ghost
-orientGhost (PF _ _ _ _) (Mov pa pm t) = Mov pa pm t
+orientGhost (PF gr pa gh ps) (Loc [] [(-1)] l) = Loc [] [(-1)] l 
+orientGhost (PF gr pa gh ps) (Mov path indices t) = Mov newPath idx t where
+	newPath = (head path) : findNearestPathNode (PF gr pa gh ps) (head path)
+	idx = getIndices (PF gr pa gh ps) $ last newPath
 orientGhost (PF gr pa gh ps) (Loc path indices l) = Loc newPath idx l where
 	newPath = findNearestPathNode (PF gr pa gh ps) l
 	idx = getIndices (PF gr pa gh ps) $ last newPath
 
+-- Updates the ghosts and locks sequentially
+-- This way we avoid 2 ghost arriving at the same
+-- destination at the same time
+checkGhosts :: PacmanField -> [Ghost] -> PacmanField
+checkGhosts (PF gr pa gh ps) ls = 
+	foldl (\(PF gr pa gh ps) x -> 
+		let 
+		res = checkGhost (PF gr pa gh ps) x
+		ghs = (fst res):gh
+		pth = (paths $ snd res)
+		in 
+		(PF gr pa ghs pth)) 
+	(PF gr pa [] ps) ls
+
+-- If a ghost has reached it's destination and if it blocks a 
+-- single path, mark the path
+checkGhost :: PacmanField -> Ghost -> (Ghost, PacmanField)
+checkGhost (PF gr pa gh ps) (Loc [] i l) 
+	| checkPaths (PF gr pa gh ps) i = ((Loc [] [(-1)] l), claimPath (PF gr pa gh ps) i)
+	| otherwise =  ((Loc [] i l), (PF gr pa gh ps))
+checkGhost f g = (g,f)
 
 ---------------
 -- Threading --
@@ -232,14 +255,14 @@ reduceUpdateChecker tvar = do
 
 -- Blocks the thread until the shared resource reaches 0
 checkUpdateChecker :: TVar Int -> STM ()
-checkUpdateChecker tvar = trace "hum" $ do 
+checkUpdateChecker tvar = do 
 	ctr <- getUpdateChecker tvar
 	if ctr == 0
-		then trace "maybe" $ writeTVar tvar 0
+		then writeTVar tvar 0
 		else retry
 
 calculateGhost :: TVar PacmanField -> TVar Int -> PacmanField -> Ghost -> IO()
-calculateGhost tField tChecker field ghost = trace "getting ghost" $ atomically $ setGhosts tField tChecker $ orientGhost field ghost
+calculateGhost tField tChecker field ghost = atomically $ setGhosts tField tChecker $ orientGhost field ghost
 
 calculateGhosts :: PacmanField -> IO(PacmanField)
 calculateGhosts (PF gr pa gh ps) = do
@@ -249,9 +272,11 @@ calculateGhosts (PF gr pa gh ps) = do
 	return $ checkUpdateChecker check
 	readTVarIO field
 
--- DEBUG
-traceT x f = trace (show $ unsafePerformIO $ readTVarIO x) f
---  atomically $ getTVar myVar >>= \x -> check (x >= waitAmount)
+runGame ::  PacmanField -> IO PacmanField
+runGame f = do
+	field <- calculateGhosts f
+	return f
+
 ---------------------
 -- Pacman strategy --
 ---------------------
@@ -267,6 +292,12 @@ findPacmanPath (PF gr pa gh ps) = PF gr pacman gh ps
 -----------------------
 -- General Functions --
 -----------------------
+updateGame :: PacmanField -> (Bool, PacmanField)
+updateGame (PF gr pa gh ps) = (not (path (pacman newField) == []), newField) where
+	newP' = updateChar gr pa
+	newGH' = map (\x -> updateChar gr x) gh
+	newlocks = checkGhosts (PF gr pa gh ps) newGH'
+	newField = unsafePerformIO $ calculateGhosts newlocks
 
 -- Makes a character move along it's path
 updateChar :: PMGraph -> Character -> Character
@@ -274,12 +305,4 @@ updateChar _ (Loc [] i l) 		= Loc [] i l
 updateChar _ (Mov (x:xs) i 1)	= Loc xs i x
 updateChar _ (Mov xs i t) 		= Mov xs i $ t - 1
 updateChar g (Loc (x:xs) i l) 	= Mov xs i $ fromJust $ getTunnelDelay g (l,x)
-
--- Set a new destination for the character, the path to this 
--- destination is calculated by the dijkstra algorithm
--- if the charachter is moving, we calculate the path starting
--- from the node it's going to
---getPath ::  PMGraph -> Character -> PMLocation -> Character
---getPath g (Loc _ l) d = Loc (tail $ dijkstra g l d) l
---getPath g (Mov (x:xs) t) d = Mov (x:(tail $ dijkstra g x d)) t
 
