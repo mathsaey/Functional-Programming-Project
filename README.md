@@ -1,5 +1,6 @@
 #About
-This project is made by Mathijs Saey for his Functional programming project at the VUB. 
+This is the project for the Functional Programming course at the VUB.
+The goal of the first part of this project is implementing a graph library in Haskell.
+The goal of the second part of this project is using this libarry to implement a Pacman-like game.
 
-#Goal
-The goal of this project is to implement a Graph library in Haskell, the full assignment can be found in the project.pdf file.
+An updated README with better information will be online later.
