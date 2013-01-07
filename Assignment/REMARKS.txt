@@ -1,0 +1,7 @@
++ Use the array module
++ Clean separation between binary search tree (reusable) and the graph implementation (specific use)
+
+= Get neighbourgs could be included inside the graph typeclass with a default implementation ; that way concrete implementation have the opportunity to rewrite an otpimized version
+= Usually Dijkstra path include the starting node as well
+
+Very very good project!!!
