@@ -11,8 +11,6 @@ import Control.Monad
 import Control.Concurrent
 import Control.Concurrent.STM
 
-import System.IO.Unsafe
-
 import Infinity
 import Graph.Kernel
 import Graph.Dijkstra
@@ -121,7 +119,12 @@ checkPaths f ls = foldl (\acc x -> acc || (not $ checkPath f x)) False ls
 
 -- Get the index of every path that contains a given node
 getIndices ::  PacmanField -> PMLocation -> [Int]
-getIndices (PF gr pa gh ps) loc = foldl (\ls (idx, pmp) -> if loc `elem` (fullPath pmp) then idx:ls else ls) [] $ assocs ps 
+getIndices (PF gr pa gh ps) loc = foldl 
+	(\ls (idx, pmp) -> 
+		if loc `elem` (fullPath pmp)
+		 then idx:ls 
+		 else ls) [] 
+	$ assocs ps 
 
 -- Block all paths that contain a given node
 blockNode :: PacmanField -> PMLocation -> PacmanField
@@ -274,8 +277,9 @@ calculateGhosts (PF gr pa gh ps) = do
 
 runGame ::  PacmanField -> IO PacmanField
 runGame f = do
-	field <- calculateGhosts f
-	return f
+	ghosts <- calculateGhosts f
+	pacman <- return $ findPacmanPath ghosts
+	return pacman
 
 ---------------------
 -- Pacman strategy --
@@ -292,12 +296,12 @@ findPacmanPath (PF gr pa gh ps) = PF gr pacman gh ps
 -----------------------
 -- General Functions --
 -----------------------
-updateGame :: PacmanField -> (Bool, PacmanField)
-updateGame (PF gr pa gh ps) = (not (path (pacman newField) == []), newField) where
+updateGame :: PacmanField -> IO PacmanField
+updateGame (PF gr pa gh ps) = newField where
 	newP' = updateChar gr pa
 	newGH' = map (\x -> updateChar gr x) gh
 	newlocks = checkGhosts (PF gr pa gh ps) newGH'
-	newField = unsafePerformIO $ calculateGhosts newlocks
+	newField = calculateGhosts newlocks
 
 -- Makes a character move along it's path
 updateChar :: PMGraph -> Character -> Character

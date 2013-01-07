@@ -22,7 +22,7 @@ Finally, it should be possible to convert a graf into PsTricks code.
 	* force-directed layout: √
 * PSP: √
 
-##Part2
+##Part 2
 The goal of part 2 is the implentation of a pacman simulation. Pacman and the ghosts should run around on a graph, nodes are places, while edges are tunnels connecting these places. It should be possible to parse a DOT file that specifies the layout of the graph and the initial positions of pacman and the ghosts.
 The ghosts should attempt to block pacman by blocking the path to his goal node, each ghost should have a dedicated thread that calculates it's route. Pacman should try to avoid the ghosts and reach his goal node.
 Finally, the course of a game has to be exported to a JSON file that can be rendered to show the flow of a game.
